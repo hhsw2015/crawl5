@@ -1,0 +1,58 @@
+name: Crawl Loveporno Data
+
+on:
+  workflow_dispatch:
+    inputs:
+      start_page:
+        description: 'Start page number (e.g., 11765)'
+        required: true
+        default: '11765'
+      end_page:
+        description: 'End page number (e.g., 1)'
+        required: true
+        default: '1'
+
+permissions:
+  contents: write  # Grant write permissions for committing files
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests beautifulsoup4 tqdm
+
+      - name: Install Git LFS
+        run: |
+          sudo apt-get update
+          sudo apt-get install git-lfs
+          git lfs install
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "hhsw2015"
+          git config --global user.email "hhsw2015@gmail.com"
+
+      - name: Run crawler
+        env:
+          START_PAGE: ${{ github.event.inputs.start_page }}
+          END_PAGE: ${{ github.event.inputs.end_page }}
+        run: |
+          python crawler.py
+
+      - name: Commit and push changes
+        if: always()  # Attempt to commit regardless of crawler success
+        run: |
+          git add loveporno_data.csv
+          git commit -m "Final commit after crawl" || echo "No changes to commit"
+          git push || echo "Push failed, possibly no changes or permission issue"
