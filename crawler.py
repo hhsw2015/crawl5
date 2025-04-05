@@ -123,7 +123,7 @@ def crawl_pages(start_page, end_page):
     total_records = 0
     pbar = tqdm(range(start_page, end_page - 1, -1), desc="Crawling pages")
     
-    with ThreadPoolExecutor(max_workers=10) as executor:
+    with ThreadPoolExecutor(max_workers=20) as executor:
         future_to_page = {executor.submit(crawl_page, page): page for page in pbar}
         for future in as_completed(future_to_page):
             page_number = future_to_page[future]
